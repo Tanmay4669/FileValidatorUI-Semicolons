@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Modal, colors } from "@mui/material"
+import { Box, CircularProgress, Modal } from "@mui/material"
 
 export const Loader=(props)=>{
     const {isLoading}=props;

@@ -11,7 +11,7 @@ import CheckIcon from "@mui/icons-material/Check";
 export const DialogBox = (props) => {
   const { open, onClick } = props;
   return (
-    <Dialog open={open} minWidth={70}>
+    <Dialog open={open} minWidth={100}>
       <DialogContent>
         <Stack gap={2} width={"100%"}>
           <Box display={"flex"} justifyContent={"center"}>
@@ -22,15 +22,15 @@ export const DialogBox = (props) => {
           <Box>Validation Successful</Box>
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{display:"flex", justifyContent:"center"}}>
         <Button
           color="primary"
-          sx={{color: "white", backgroundColor:"#020381"}}
+          sx={{ color: "white", backgroundColor: "#020381" }}
           variant="contained"
           size="small"
           onClick={onClick}
         >
-          Close
+          Download
         </Button>
       </DialogActions>
     </Dialog>
