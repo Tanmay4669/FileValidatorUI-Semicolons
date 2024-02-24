@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import DataTable from "./DataTable";
 import { Loader } from "../common/Loader";
 import { DialogBox } from "../common/DialogBox";
-import './UploadForm.css'
-
+import "./UploadForm.css";
 
 function UploadForm() {
   const [rulesFile, setRulesFile] = useState(null);
@@ -38,11 +37,9 @@ function UploadForm() {
         .then((result) => {
           // Handle API response
           setValidationResult(result); // Update state with validation result
-          console.log("Print Data", result);
           setIsLoading(false);
         })
         .catch((error) => {
-          console.error("Error:", error);
           setIsLoading(false);
         });
     } else {
@@ -52,15 +49,27 @@ function UploadForm() {
 
   // Check if both files are uploaded
   const isValidationDisabled = !rulesFile || !dataFile;
-  const onYesClick=()=>{
-  setValidationResult(null);
-  setDataFile(null);
-  setRulesFile(null);
-  }
+  const downloadTxtFile = (data) => {
+    const element = document.createElement("a");
+    const file = new Blob([data], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = `validated_file_${Date.now()}.txt`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+  const onYesClick = () => {
+    if (validationResult.status === "success") {
+      downloadTxtFile(validationResult.dataFileContent);
+    }
+    setValidationResult(null);
+    setDataFile(null);
+    setRulesFile(null);
+  };
   return (
     <>
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full card"  >
+        <h2 className="mb-4 text-bold text-4xl font-bold ">File Validator</h2>
+        <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full card">
           <div className="flex flex-col space-y-6">
             <div className="flex flex-col space-y-2">
               <label htmlFor="rulesFile" className="text-gray-700">
@@ -123,17 +132,20 @@ function UploadForm() {
             </button>
           </div>
         </div>
-        {validationResult?.status==="failed" ? (
+        {validationResult?.status === "failed" ? (
           <DataTable
             validationResult={validationResult}
             rulesFile={rulesFile}
             onYesClick={onYesClick}
           />
-        ):null}
+        ) : null}
         {/* Pass rulesFile as a prop to the Result component */}
       </div>
       {isLoading ? <Loader isLoading={isLoading} /> : null}
-      <DialogBox open={validationResult?.status === "success" ? true : false} onClick={onYesClick}/>
+      <DialogBox
+        open={validationResult?.status === "success" ? true : false}
+        onClick={onYesClick}
+      />
     </>
   );
 }
