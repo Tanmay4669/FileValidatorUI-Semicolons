@@ -58,12 +58,14 @@ const DataTable = ({ validationResult, rulesFile }) => {
     .map((line) => line.trim())
     .filter((line) => line !== "");
 
+  const errorColumnNames = validationResult.errors.map(error=>error.columnName);
+
   return (
     <div className="w-[95%] m-16">
       <h2 className="text-2xl font-bold mb-4">Result</h2>
       <div className="bg-white p-8 rounded-lg justify-center shadow-lg w-full overflow-x-auto">
         <DataGrid
-          editMode="cell"
+          //editMode="cell"
           processRowUpdate={(params) => {
             setEditedData((prevState) => ({
               ...prevState,
@@ -76,9 +78,11 @@ const DataTable = ({ validationResult, rulesFile }) => {
             { field: "status", headerName: "Status",flex:1 },
             { field: "expectedFormat", headerName: "Expected Format",flex:4 },
           ]}
+          isCellEditable={(params) => errorColumnNames.includes(params.row.columnName)}
           rows={dataRows.map((row, index) => {
             const [columnName, value] = row.split(":");
-            const canEdit = ["DATE", "GENDER"].includes(columnName);
+            const errorColumns = validationResult.errors;
+            console.log(errorColumns);
             const editedValue =
               editedData[columnName] !== undefined
                 ? editedData[columnName]
