@@ -2,10 +2,12 @@
 
 import { DataGrid } from "@mui/x-data-grid";
 import React, { useState, useEffect } from "react";
+import { Loader } from "../common/Loader";
 
 const DataTable = ({ validationResult, rulesFile }) => {
   const [editedData, setEditedData] = useState({});
   const [editedContent, setEditedContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const originalContent = validationResult.dataFileContent.split("\n");
 
@@ -37,18 +39,20 @@ const DataTable = ({ validationResult, rulesFile }) => {
     const formData = new FormData();
     formData.append("rulesFile", rulesFile);
     formData.append("dataFile", editedFile);
-
+    setIsLoading(true);
     // Make the POST request with both files
-    fetch("https://filevalidator.azurewebsites.net/validate", {
+    fetch("https://validator2.azurewebsites.net/validate", {
       method: "POST",
       body: formData,
     })
       .then((response) => response.json())
       .then((data) => {
         // Handle response if needed
+        setIsLoading(false);
         console.log(data);
       })
       .catch((error) => {
+        setIsLoading(false);
         console.error("Error:", error);
       });
   };
@@ -59,52 +63,64 @@ const DataTable = ({ validationResult, rulesFile }) => {
     .filter((line) => line !== "");
 
   return (
-    <div className="w-[95%] m-16">
-      <h2 className="text-2xl font-bold mb-4">Result</h2>
-      <div className="bg-white p-8 rounded-lg justify-center shadow-lg w-full overflow-x-auto">
-        <DataGrid
-          editMode="cell"
-          processRowUpdate={(params) => {
-            setEditedData((prevState) => ({
-              ...prevState,
-              [params.columnName]: params.value,
-            }));
-          }}
-          columns={[
-            { field: "columnName", headerName: "Column Name", flex:1.5 },
-            { field: "value", headerName: "Value", editable: true,flex:1 },
-            { field: "status", headerName: "Status",flex:1 },
-            { field: "expectedFormat", headerName: "Expected Format",flex:4 },
-          ]}
-          rows={dataRows.map((row, index) => {
-            const [columnName, value] = row.split(":");
-            const canEdit = ["DATE", "GENDER"].includes(columnName);
-            const editedValue =
-              editedData[columnName] !== undefined
-                ? editedData[columnName]
-                : value;
-            const error = validationResult.errors.find(
-              (error) => error.columnName === columnName
-            );
-            const status = error ? "failed" : "success";
-            const format = error ? error.format : "";
-            return {
-              id: index,
-              columnName: columnName,
-              value: editedValue,
-              status: status,
-              expectedFormat: format,
-            };
-          })}
-        />
-        <button
-          onClick={handleValidate}
-          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Submit
-        </button>
+    <>
+      <div className="w-[95%] m-16">
+        <h2 className="text-2xl font-bold mb-4">Result</h2>
+        <div className="bg-white p-8 rounded-lg justify-center shadow-lg w-full overflow-x-auto">
+          <DataGrid
+            editMode="cell"
+            processRowUpdate={(params) => {
+              setEditedData((prevState) => ({
+                ...prevState,
+                [params.columnName]: params.value,
+              }));
+            }}
+            columns={[
+              { field: "columnName", headerName: "Column Name", flex: 1.5 },
+              {
+                field: "value",
+                headerName: "Value (Editable)",
+                editable: true,
+                flex: 1,
+              },
+              { field: "status", headerName: "Status", flex: 1 },
+              {
+                field: "expectedFormat",
+                headerName: "Expected Format",
+                flex: 4,
+              },
+            ]}
+            rows={dataRows.map((row, index) => {
+              const [columnName, value] = row.split(":");
+              const canEdit = ["DATE", "GENDER"].includes(columnName);
+              const editedValue =
+                editedData[columnName] !== undefined
+                  ? editedData[columnName]
+                  : value;
+              const error = validationResult.errors.find(
+                (error) => error.columnName === columnName
+              );
+              const status = error ? "failed" : "success";
+              const format = error ? error.format : "";
+              return {
+                id: index,
+                columnName: columnName,
+                value: editedValue,
+                status: status,
+                expectedFormat: format,
+              };
+            })}
+          />
+          <button
+            onClick={handleValidate}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Submit
+          </button>
+        </div>
       </div>
-    </div>
+      {isLoading ? <Loader isLoading={isLoading} /> : null}
+    </>
   );
 };
 
