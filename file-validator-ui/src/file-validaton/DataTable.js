@@ -1,18 +1,11 @@
 // DataTable.js
 
+import { DataGrid } from "@mui/x-data-grid";
 import React, { useState, useEffect } from "react";
 
 const DataTable = ({ validationResult, rulesFile }) => {
   const [editedData, setEditedData] = useState({});
   const [editedContent, setEditedContent] = useState("");
-
-  const handleInputChange = (columnName, value) => {
-    setEditedData((prevState) => ({
-      ...prevState,
-      [columnName]: value,
-    }));
-  };
-
   useEffect(() => {
     const originalContent = validationResult.dataFileContent.split("\n");
 
@@ -66,59 +59,44 @@ const DataTable = ({ validationResult, rulesFile }) => {
     .filter((line) => line !== "");
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Validation Errors</h2>
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-3xl w-full overflow-x-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="py-2 px-4 border border-gray-200">Column Name</th>
-              <th className="py-2 px-4 border border-gray-200">Value</th>
-              <th className="py-2 px-4 border border-gray-200">Status</th>
-              <th className="py-2 px-4 border border-gray-200">
-                Expected Format
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {dataRows.map((row, index) => {
-              const [columnName, value] = row.split(":");
-              const canEdit = ["DATE", "GENDER"].includes(columnName);
-              const editedValue =
-                editedData[columnName] !== undefined
-                  ? editedData[columnName]
-                  : value;
-              const error = validationResult.errors.find(
-                (error) => error.columnName === columnName
-              );
-              const status = error ? "failed" : "pass";
-              const format = error ? error.format : "";
-              return (
-                <tr key={index} className="bg-white">
-                  <td className="py-2 px-4 border border-gray-200">
-                    {columnName}
-                  </td>
-                  <td className="py-2 px-4 border border-gray-200">
-                    {canEdit ? (
-                      <input
-                        type="text"
-                        className="border border-gray-300 rounded-md px-2 py-1 w-full"
-                        value={editedValue}
-                        onChange={(e) =>
-                          handleInputChange(columnName, e.target.value)
-                        }
-                      />
-                    ) : (
-                      <span>{editedValue}</span>
-                    )}
-                  </td>
-                  <td className="py-2 px-4 border border-gray-200">{status}</td>
-                  <td className="py-2 px-4 border border-gray-200">{format}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="w-[95%] m-16">
+      <h2 className="text-2xl font-bold mb-4">Result</h2>
+      <div className="bg-white p-8 rounded-lg justify-center shadow-lg w-full overflow-x-auto">
+        <DataGrid
+          editMode="cell"
+          processRowUpdate={(params) => {
+            setEditedData((prevState) => ({
+              ...prevState,
+              [params.columnName]: params.value,
+            }));
+          }}
+          columns={[
+            { field: "columnName", headerName: "Column Name", flex:1.5 },
+            { field: "value", headerName: "Value", editable: true,flex:1 },
+            { field: "status", headerName: "Status",flex:1 },
+            { field: "expectedFormat", headerName: "Expected Format",flex:4 },
+          ]}
+          rows={dataRows.map((row, index) => {
+            const [columnName, value] = row.split(":");
+            const canEdit = ["DATE", "GENDER"].includes(columnName);
+            const editedValue =
+              editedData[columnName] !== undefined
+                ? editedData[columnName]
+                : value;
+            const error = validationResult.errors.find(
+              (error) => error.columnName === columnName
+            );
+            const status = error ? "failed" : "success";
+            const format = error ? error.format : "";
+            return {
+              id: index,
+              columnName: columnName,
+              value: editedValue,
+              status: status,
+              expectedFormat: format,
+            };
+          })}
+        />
         <button
           onClick={handleValidate}
           className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import DataTable from "./DataTable";
-import Result from "./Result";
 
 function UploadForm() {
   const [rulesFile, setRulesFile] = useState(null);
@@ -26,7 +25,7 @@ function UploadForm() {
       formData.append("dataFile", dataFile);
 
       // Example API call using fetch
-      fetch("https://filevalidator.azurewebsites.net/validate", {
+      fetch("https://validator2.azurewebsites.net/validate", {
         method: "POST",
         body: formData,
       })
@@ -111,17 +110,9 @@ function UploadForm() {
           </button>
         </div>
       </div>
-      {/* {validationResult && (
-        <Result
-          validationResult={validationResult}
-          rulesFile={rulesFile}
-          dataFile={dataFile}
-        />
-      )}{" "} */}
-      {validationResult && (
+{validationResult && (
         <DataTable validationResult={validationResult} rulesFile={rulesFile} />
       )}
-
       {/* Pass rulesFile as a prop to the Result component */}
     </div>
   );
