@@ -3,11 +3,15 @@
 import { DataGrid } from "@mui/x-data-grid";
 import React, { useState, useEffect } from "react";
 import { Loader } from "../common/Loader";
-
-const DataTable = ({ validationResult, rulesFile }) => {
+import { DialogBox } from "../common/DialogBox";
+import { Box } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+const DataTable = ({ validationResult, rulesFile, onYesClick }) => {
   const [editedData, setEditedData] = useState({});
   const [editedContent, setEditedContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [editedValidationResult, setEditedValidationResult] = useState(null);
+
   useEffect(() => {
     const originalContent = validationResult.dataFileContent.split("\n");
 
@@ -49,6 +53,7 @@ const DataTable = ({ validationResult, rulesFile }) => {
       .then((data) => {
         // Handle response if needed
         setIsLoading(false);
+        setEditedValidationResult(data);
         console.log(data);
       })
       .catch((error) => {
@@ -62,68 +67,87 @@ const DataTable = ({ validationResult, rulesFile }) => {
     .map((line) => line.trim())
     .filter((line) => line !== "");
 
-  const errorColumnNames = validationResult.errors.map(error=>error.columnName);
-
+  const errorColumnNames = validationResult.errors.map(
+    (error) => error.columnName
+  );
   return (
     <>
       <div className="w-[95%] m-16">
         <h2 className="text-2xl font-bold mb-4">Result</h2>
         <div className="bg-white p-8 rounded-lg justify-center shadow-lg w-full overflow-x-auto">
-          <DataGrid
-            //editMode="cell"
-            processRowUpdate={(params) => {
-              setEditedData((prevState) => ({
-                ...prevState,
-                [params.columnName]: params.value,
-              }));
-            }}
-            columns={[
-              { field: "columnName", headerName: "Column Name", flex: 1.5 },
-              {
-                field: "value",
-                headerName: "Value (Editable)",
-                editable: true,
-                flex: 1,
-              },
-              { field: "status", headerName: "Status", flex: 1 },
-              {
-                field: "expectedFormat",
-                headerName: "Expected Format",
-                flex: 4,
-              },
-            ]}
-            isCellEditable={(params) => errorColumnNames.includes(params.row.columnName)}
-          rows={dataRows.map((row, index) => {
-              const [columnName, value] = row.split(":");
-              const errorColumns = validationResult.errors;
-            console.log(errorColumns);
-              const editedValue =
-                editedData[columnName] !== undefined
-                  ? editedData[columnName]
-                  : value;
-              const error = validationResult.errors.find(
-                (error) => error.columnName === columnName
-              );
-              const status = error ? "failed" : "success";
-              const format = error ? error.format : "";
-              return {
-                id: index,
-                columnName: columnName,
-                value: editedValue,
-                status: status,
-                expectedFormat: format,
-              };
-            })}
-          />
+          {validationResult?.status ? (
+            <DataGrid
+              processRowUpdate={(params) => {
+                setEditedData((prevState) => ({
+                  ...prevState,
+                  [params.columnName]: params.value,
+                }));
+              }}
+              
+              columns={[
+                { field: "columnName", headerName: "Column Name", flex: 1.5 },
+                {
+                  field: "value",
+                  headerName: "Value (Editable)",
+                  editable: true,
+                  flex: 1,
+                  renderCell: (dataItem) => {
+                    return (
+                      <Box display={"flex"} gap={1}>
+                        <Box>{dataItem.value}</Box>
+                        {dataItem?.row?.status === "failed" ? (
+                          <EditIcon fontSize="small" />
+                        ) : null}
+                      </Box>
+                    );
+                  },
+                },
+                { field: "status", headerName: "Status", flex: 1 },
+                {
+                  field: "expectedFormat",
+                  headerName: "Expected Format",
+                  flex: 4,
+                },
+              ]}
+              isCellEditable={(params) =>
+                errorColumnNames.includes(params.row.columnName)
+              }
+              rows={dataRows.map((row, index) => {
+                const [columnName, value] = row.split(":");
+                const errorColumns = validationResult.errors;
+                console.log(errorColumns);
+                const editedValue =
+                  editedData[columnName] !== undefined
+                    ? editedData[columnName]
+                    : value;
+                const error = validationResult.errors.find(
+                  (error) => error.columnName === columnName
+                );
+                const status = error ? "failed" : "success";
+                const format = error ? error.format : "";
+                return {
+                  id: index,
+                  columnName: columnName,
+                  value: editedValue,
+                  status: status,
+                  expectedFormat: format,
+                };
+              })}
+            />
+          ) : null}
           <button
             onClick={handleValidate}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="mt-4 bg-[#020381] hover:bg-gray-100 hover:text-[#020381] text-white font-bold py-2 px-4 rounded"
           >
             Submit
           </button>
         </div>
       </div>
       {isLoading ? <Loader isLoading={isLoading} /> : null}
+      <DialogBox
+        open={editedValidationResult?.status === "success" ? true : false}
+        onClick={onYesClick}
+      />
     </>
   );
 };

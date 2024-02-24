@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import DataTable from "./DataTable";
 import { Loader } from "../common/Loader";
+import { DialogBox } from "../common/DialogBox";
+import './UploadForm.css'
+
+
 function UploadForm() {
   const [rulesFile, setRulesFile] = useState(null);
   const [dataFile, setDataFile] = useState(null);
@@ -48,14 +52,15 @@ function UploadForm() {
 
   // Check if both files are uploaded
   const isValidationDisabled = !rulesFile || !dataFile;
-
+  const onYesClick=()=>{
+  setValidationResult(null);
+  setDataFile(null);
+  setRulesFile(null);
+  }
   return (
     <>
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <h1 className="text-4xl font-bold mb-8 text-blue-600">
-          File Validator
-        </h1>
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
+        <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full card"  >
           <div className="flex flex-col space-y-6">
             <div className="flex flex-col space-y-2">
               <label htmlFor="rulesFile" className="text-gray-700">
@@ -71,9 +76,9 @@ function UploadForm() {
                 />
                 <label
                   htmlFor="rulesFile"
-                  className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer rounded-lg px-6 py-3 text-white text-lg font-semibold shadow-md"
+                  className="bg-[#020381] hover:bg-gray-100 hover:text-[#020381] transition-colors duration-300 cursor-pointer rounded-lg px-4 py-2 text-white text-base font-semibold shadow-md"
                 >
-                  Choose File
+                  Select File
                 </label>
                 {rulesFile && (
                   <span className="text-sm text-gray-500">
@@ -96,9 +101,9 @@ function UploadForm() {
                 />
                 <label
                   htmlFor="dataFile"
-                  className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer rounded-lg px-6 py-3 text-white text-lg font-semibold shadow-md"
+                  className="bg-[#020381] hover:bg-gray-100 hover:text-[#020381] transition-colors duration-300 cursor-pointer rounded-lg px-4 py-2 text-white text-base font-semibold shadow-md"
                 >
-                  Choose File
+                  Select File
                 </label>
                 {dataFile && (
                   <span className="text-sm text-gray-500">{dataFile.name}</span>
@@ -108,8 +113,8 @@ function UploadForm() {
             <button
               className={`${
                 isValidationDisabled
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
+                  ? "bg-gray-300   cursor-not-allowed"
+                  : "bg-[#020381] hover:bg-gray-100 hover:text-[#020381]"
               } transition-colors duration-300 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg`}
               onClick={handleValidate}
               disabled={isValidationDisabled}
@@ -118,17 +123,17 @@ function UploadForm() {
             </button>
           </div>
         </div>
-        {validationResult && (
+        {validationResult?.status==="failed" ? (
           <DataTable
             validationResult={validationResult}
             rulesFile={rulesFile}
+            onYesClick={onYesClick}
           />
-        )}
+        ):null}
         {/* Pass rulesFile as a prop to the Result component */}
       </div>
-      {isLoading ? (
-       <Loader isLoading={isLoading}/>
-      ) : null}
+      {isLoading ? <Loader isLoading={isLoading} /> : null}
+      <DialogBox open={validationResult?.status === "success" ? true : false} onClick={onYesClick}/>
     </>
   );
 }
