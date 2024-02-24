@@ -1,10 +1,12 @@
 import React from "react";
 import UploadForm from "./file-validaton/UploadForm";
-import DataTable from "./file-validaton/DataTable";
+import { AppBar } from "@mui/material";
 
 function App() {
   return (
-    <div className="App">
+    <div
+      className="App"
+    >
       <UploadForm />
     </div>
   );
