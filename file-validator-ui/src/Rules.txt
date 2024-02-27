@@ -1,0 +1,8 @@
+SSN:Ensure it meets specific length of Digits {ddd-dd-dddd} requirements.
+DATE:It should follows {MM-DD-YYYY} format.
+GENDER: It should be from [male|female|other|Preferred not to say]
+
+
+
+
+
